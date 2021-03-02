@@ -1,0 +1,70 @@
+---
+title: "du_bois"
+author: "ofchurches"
+date: "23 February 2021"
+output: html_document
+---
+
+# Get the package
+```{r setup, include=FALSE}
+library(tidyverse)
+library(knitr)
+```
+
+# Get the data
+```{r download data}
+freed_slaves <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-16/freed_slaves.csv')
+
+```
+
+# Design intent
+I'm thinking of re-creating this:
+
+![](`r "https://rss.onlinelibrary.wiley.com/cms/asset/c7ef2769-eae9-445c-b27f-6814ed9fd112/sign1070-fig-0003-m.png"`)
+
+I guess its a stacked area chart?
+
+# Shaping
+But, the `freed_slaves` data isn't tidy. There are two colums of numeric data for the levels of the factor rather than a factor with the level and a factor with the numeric value.
+
+```{r}
+freed_slaves_tidy <- freed_slaves %>%
+  pivot_longer(cols = !Year, 
+               names_to = "person",
+               values_to = "percent")
+  
+```
+
+# Ploting
+```{r}
+freed_slaves_tidy %>%
+  ggplot(aes(x = Year, y = percent, fill = person)) + 
+    geom_area()
+```
+
+# Checks
+At 1800 it look like there are less than 100%. This is worth a check:
+
+```{r}
+freed_slaves %>%
+  rowwise() %>%
+  mutate(sum = sum(Slave, Free)) %>%
+  kable()
+```
+
+But that's the data so I'm going to leave it as is.
+
+# Aesthetics
+Time to set the colours and add the text.
+
+```{r}
+
+freed_slaves_tidy %>%
+  ggplot(aes(x = Year, y = percent, fill = person)) + 
+  geom_area() +
+  scale_fill_manual(values=c("#00aa00", "#000000")) + 
+  theme_minimal() + 
+  labs(title = "PROORTION OF FREEMEN AND SLAVES AMONG AMERICAN NEGROES", 
+       subtitle ="DONE BY ATLANTA UNIVERSITY")
+
+```
